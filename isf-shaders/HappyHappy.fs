@@ -2,41 +2,6 @@
 	"CATEGORIES": [],
 	"CREDIT": "Jim Cortez - Commune Project (Original: Unknown, Ping 2.0)",
 	"DESCRIPTION": "Creates a playful landscape with animated clouds and ground. Features a vibrant color palette, animated cloud layers, and dynamic ground shapes for a whimsical, cartoon-like scene.",
-	"INPUTS": [
-		{
-			"DEFAULT": 1.0,
-			"NAME": "boolInput",
-			"TYPE": "bool"
-		},
-		{
-			"DEFAULT": [0.0, 0.0, 1.0, 1.0],
-			"NAME": "colorInput",
-			"TYPE": "color"
-		},
-		{
-			"NAME": "flashInput",
-			"TYPE": "event"
-		},
-		{
-			"DEFAULT": 0.5,
-			"MAX": 1.0,
-			"MIN": 0.0,
-			"NAME": "floatInput",
-			"TYPE": "float"
-		},
-		{
-			"DEFAULT": 1,
-			"LABELS": ["red", "green", "blue"],
-			"NAME": "longInputIsAPopUpButton",
-			"TYPE": "long",
-			"VALUES": [0, 1, 2]
-		},
-		{
-			"DEFAULT": [0, 0],
-			"NAME": "pointInput",
-			"TYPE": "point2D"
-		}
-	],
 	"ISFVSN": "2"
 }*/
 
