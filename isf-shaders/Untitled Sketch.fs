@@ -8,8 +8,7 @@
 		{"NAME": "v3", "LABEL": "v3", "TYPE": "float", "MIN": 0, "MAX": 1, "DEFAULT": 0.5},
 		{"NAME": "v4", "LABEL": "v4", "TYPE": "float", "MIN": 0, "MAX": 0.628318, "DEFAULT": 0.628318},
 		{"NAME": "v5", "LABEL": "v5", "TYPE": "float", "MIN": 0.3, "MAX": 0.9, "DEFAULT": 0.6},
-		{"NAME": "v6", "LABEL": "v6", "TYPE": "float", "MIN": 0.005, "MAX": 0.05, "DEFAULT": 0.005},
-		{"NAME": "v7", "TYPE": "long", "VALUES": [2, 1, 3], "LABELS": ["cos", "sin", "abs"], "DEFAULT": 1}
+		{"NAME": "v6", "LABEL": "v6", "TYPE": "float", "MIN": 0.005, "MAX": 0.05, "DEFAULT": 0.005}
 	],
 	"ISFVSN": "2"
 }*/
