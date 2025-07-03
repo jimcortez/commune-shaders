@@ -1,11 +1,8 @@
 /*{
 	"CATEGORIES": [],
 	"CREDIT": "Jim Cortez - Commune Project (Original: David Hoskins, ISF import by Old Salt)",
-	"DESCRIPTION": "Creates a wispy background effect with tiled patterns. Features color, rotation, continuous rotation, density, and intensity controls for dynamic wispy water-like animations.",
+	"DESCRIPTION": "Creates a wispy background effect with tiled patterns. Features density and intensity controls for dynamic wispy water-like animations.",
 	"INPUTS": [
-		{"NAME": "uC1", "TYPE": "color", "DEFAULT": [0.0,1.0,0.0,1.0]},
-		{"LABEL": "Rotation(or R Speed):", "NAME": "uRotate", "TYPE": "float", "MAX": 180.0, "MIN": -180.0, "DEFAULT": 0.0},
-		{"LABEL": "Continuous Rotation? ", "NAME": "uContRot", "TYPE": "bool", "DEFAULT": 1},
 		{"LABEL": "Density: ", "NAME": "uDensity", "TYPE": "float", "MAX": 20.0, "MIN": 1, "DEFAULT": 4.0},
 		{"LABEL": "Intensity: ", "NAME": "uIntensity", "TYPE": "float", "MAX": 4.0, "MIN": 0, "DEFAULT": 1.0}
 	],
