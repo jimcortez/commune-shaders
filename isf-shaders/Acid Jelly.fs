@@ -65,11 +65,6 @@
             "TYPE": "float"
         },
         {
-            "DEFAULT": 0.003,
-            "NAME": "gloop",
-            "TYPE": "float"
-        },
-        {
             "DEFAULT": 4.99,
             "NAME": "yDivide",
             "TYPE": "float"
