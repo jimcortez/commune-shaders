@@ -6,11 +6,7 @@
 		{"NAME": "speed", "TYPE": "float", "DEFAULT": 0.1, "MIN": 0.0, "MAX": 1.0},
 		{"NAME": "density", "TYPE": "float", "DEFAULT": 6.0, "MIN": 1.0, "MAX": 12.0}
 	],
-	"ISFVSN": "2",
-	"PASSES": [
-		{"TARGET": "bufferVariableNameA", "WIDTH": "$WIDTH/16.0", "HEIGHT": "$HEIGHT/16.0"},
-		{"DESCRIPTION": "this empty pass is rendered at the same rez as whatever you are running the ISF filter at- the previous step rendered an image at one-sixteenth the res, so this step ensures that the output is full-size"}
-	]
+	"ISFVSN": "2"
 }*/
 
 /*
@@ -23,37 +19,61 @@ ORIGINAL SHADER INFORMATION:
 - Features: Animated snow, density and speed controls
 */
 
-void main()
-{
-    float snow = 0.0;
-    float gradient = (1.0-float(gl_FragCoord.y / RENDERSIZE.y))*0.99;
-    float random = fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))* 43758.5453);
+// Simple noise function
+float noise(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+// Snowflake function
+float snowflake(vec2 uv, float time, float seed) {
+    // Create hexagonal grid
+    vec2 hex = vec2(uv.x + uv.y * 0.5, uv.y * 0.866025);
+    vec2 id = floor(hex);
+    vec2 gv = fract(hex) - 0.5;
+    
+    // Add randomness based on seed
+    float n = noise(id + seed);
+    if (n < 0.3) return 0.0; // Only some cells have snowflakes
+    
+    // Create snowflake shape
+    float d = length(gv);
+    float angle = atan(gv.y, gv.x);
+    float arms = 6.0;
+    float arm = sin(angle * arms + time * 0.5) * 0.1;
+    
+    return smoothstep(0.3 + arm, 0.1 + arm, d);
+}
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / RENDERSIZE.xy;
+    vec2 p = (uv - 0.5) * 2.0;
+    p.x *= RENDERSIZE.x / RENDERSIZE.y;
+    
     float time = TIME * speed;
-    for(int k=0;k<12;k++){
-        for(int i=0;i<14;i++){
-            float cellSize = 2.0 + (float(i)*3.0);
-			float downSpeed = 0.3+(sin(time*0.4+float(k+i*20))+1.0)*0.00008;
-            vec2 uv = (gl_FragCoord.xy / RENDERSIZE.x)+vec2(0.01*sin((time+float(k*6185))*0.6+float(i))*(5.0/float(i)),downSpeed*(time+float(k*1352))*(1.0/float(i)));
-            vec2 uvStep = (ceil((uv)*cellSize-vec2(0.5,0.5))/cellSize);
-            float x = fract(sin(dot(uvStep.xy,vec2(12.9898+float(k)*12.0,78.233+float(k)*315.156)))* 43758.5453+float(k)*12.0)-0.5;
-            float y = fract(sin(dot(uvStep.xy,vec2(62.2364+float(k)*23.0,94.674+float(k)*95.0)))* 62159.8432+float(k)*12.0)-0.5;
-
-            float randomMagnitude1 = sin(time*2.5)*0.7/cellSize;
-            float randomMagnitude2 = cos(time*2.5)*0.7/cellSize;
-
-            float d = 5.0*distance((uvStep.xy + vec2(x*sin(y),y)*randomMagnitude1 + vec2(y,x)*randomMagnitude2),uv.xy);
-
-            float omiVal = fract(sin(dot(uvStep.xy,vec2(32.4691,94.615)))* 31572.1684);
-            if(omiVal<0.08?true:false){
-                float newd = (x+1.0)*0.4*clamp(1.9-d*(15.0+(x*6.3))*(cellSize/1.4),0.0,1.0);
-                /*snow += d<(0.08+(x*0.3))/(cellSize/1.4)?
-                    newd
-                    :newd;*/
-                snow += newd;
-            }
-        }
+    
+    // Create gradient sky background (always visible)
+    vec3 sky = mix(vec3(0.4, 0.7, 1.0), vec3(0.1, 0.2, 0.4), uv.y);
+    
+    // Generate multiple layers of snowflakes
+    float snow = 0.0;
+    float snowDensity = max(density, 1.0);
+    
+    for (int i = 0; i < 8; i++) {
+        float layer = float(i);
+        vec2 offset = vec2(
+            sin(time * 0.3 + layer * 1.5) * 0.2,
+            fract(time * 0.2 + layer * 0.7) * 2.0 - 1.0
+        );
+        float flake = snowflake(p + offset, time + layer * 10.0, layer * 100.0);
+        snow += flake * (1.0 - layer * 0.1) / snowDensity;
     }
     
+    // Ensure snow is visible
+    snow = clamp(snow * 2.0, 0.0, 1.0);
     
-    gl_FragColor = vec4(snow)+gradient*vec4(0.4,0.7,1.0,1.0) + random*0.01;
+    // Mix snow (white) with sky background
+    vec3 color = mix(sky, vec3(1.0), snow);
+    
+    // Ensure output is always visible and properly clamped
+    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }

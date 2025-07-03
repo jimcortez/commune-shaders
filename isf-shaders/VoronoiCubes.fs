@@ -26,12 +26,6 @@ ORIGINAL SHADER INFORMATION:
 - Features: Voronoi cubes, animated color, noise, and parameter controls
 */
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-#extension GL_OES_standard_derivatives : enable
-
 #define c30    0.866025       // cos 30
 #define twpi   6.283185       // two pi, 2*pi
 
@@ -85,5 +79,5 @@ void main(void) {
 	vec3 col = 0.5 + 0.5 * sin(c.y * Sat + vec3(C, M, Y));
 	col *= sqrt(clamp(1.0 - c.x, 0.0, 1.0));
 	col *= clamp(0.5 + (1.0 - c.z / 2.0) * 0.5, 0.0, 1.0);
-	gl_FragColor = vec4(col, 1.0);
+	gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
