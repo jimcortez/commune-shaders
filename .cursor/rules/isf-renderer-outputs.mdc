@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+---
+# ISF Renderer Output Management
+
+When using the `isf-shader-render` tool to generate images:
+
+1. **Always place output images in the `outputs/` directory**
+   - Use paths like `outputs/test.png`, `outputs/shader_name.png`, etc.
+   - Create the `outputs/` directory if it doesn't exist
+
+2. **Never delete the generated images after rendering**
+   - Keep all rendered images for reference and comparison
+   - Images should persist across sessions
+
+3. **Use descriptive filenames**
+   - Include shader name and test parameters in filename
+   - Example: `outputs/acid_jelly_test_256x256.png`
+
+4. **Verify outputs as usual**
+   - Check file type and size after rendering
+   - Confirm visual output matches expectations
+   - But do not remove the files after verification
+
+This ensures all shader test outputs are preserved for future reference and comparison.

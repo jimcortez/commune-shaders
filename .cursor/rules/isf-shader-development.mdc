@@ -1,0 +1,34 @@
+---
+alwaysApply: true
+---
+
+# ISF Shader Development Rules
+
+## ISF Input Types and Uniforms
+- **Never declare explicit uniforms** for ISF inputs - they are automatically provided by the ISF host
+- **Never declare TIME or RENDERSIZE uniforms** - these are automatically provided by ISF
+- **ISF only supports these input types**: `float`, `bool`, `color`, `point2D`, `image`
+- **Never use `int` as an input type** - use `float` and cast to `int` in the shader code if needed
+
+## GLSL/ISF Compatibility
+- **Avoid non-constant loop bounds with break statements** - some GLSL environments don't support `for (int i = 0; i < 100; i++) { if (i >= iterations) break; }`
+- **Use fixed iteration counts** for loops and blend results for fractional control
+- **Clamp color outputs** to [0,1] range to avoid artifacts: `clamp(color, 0.0, 1.0)`
+
+## ISF Shader Structure
+- **JSON metadata must be at the top** of the file in `/*{ ... }*/` format
+- **Use descriptive LABEL fields** for rotation inputs: `"LABEL": "X rotate"`
+- **Set appropriate MIN/MAX values** for all numeric inputs
+
+## Testing and Validation
+- **Always use `isf-shader-render` with `--ai-info` flag** for automated testing
+- **Test with small output sizes first** (e.g., 256x256) for quick validation
+- **Verify output files exist and are non-empty** after rendering
+- **Check file type and size** to ensure valid PNG output
+
+## Common Fixes
+- Remove unused functions (like duplicate rotation functions)
+- Use `safe_log2(float x) { return log2(max(x, 1e-6)); }` helper
+- Cast float inputs to int when needed: `int iterations = int(iterationsF);`
+- Ensure all math operations are GLSL ES compatible
+

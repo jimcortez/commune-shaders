@@ -93,9 +93,6 @@ ORIGINAL SHADER INFORMATION:
 - Features: Multiple variants with different parameter configurations for various visual effects
 */
 
-vec3 iResolution = vec3(RENDERSIZE, 1.);
-float iTime = TIME;
-
 #define PI 3.141592
 #define orbs 20.
 #define orbSize 6.46
@@ -110,20 +107,22 @@ mat2 rotate(float a) {
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-  vec2 uv = (2. * fragCoord - iResolution.xy) / iResolution.y;
+  fragColor = vec4(0.0);
+  vec2 uv = (2. * fragCoord - RENDERSIZE.xy) / RENDERSIZE.y;
   uv *= zoom;
   uv /= dot(uv, uv);
-  uv *= rotate(rotation * iTime / 10.);
+  uv *= rotate(rotation * TIME / 10.);
   for (float i = 0.; i < orbs; i++) {
-    uv.x += sinMul * sin(uv.y * yMul + iTime * xSpeed) + cos(uv.y / yDivide - iTime);
-    uv.y += cosMul * cos(uv.x * xMul - iTime * ySpeed) - sin(uv.x / xDivide - iTime);
+    uv.x += sinMul * sin(uv.y * yMul + TIME * xSpeed) + cos(uv.y / yDivide - TIME);
+    uv.y += cosMul * cos(uv.x * xMul - TIME * ySpeed) - sin(uv.x / xDivide - TIME);
     float t = i * PI / orbs * 2.;
     float x = radius * tan(t);
-    float y = radius * cos(t + iTime / 10.);
+    float y = radius * cos(t + TIME / 10.);
     vec2 position = vec2(x, y);
     vec3 color = cos(.02 * uv.x + .02 * uv.y * vec3(-2, 0, -1) * PI * 2. / 3. + PI * (float(i) / colorShift)) * 0.5 + 0.5;
     fragColor += .65 - orb(uv, orbSize, position, 1. - color, contrast);
   }
+  fragColor = clamp(fragColor, 0.0, 1.0);
   fragColor.a = 1.0;
 }
 

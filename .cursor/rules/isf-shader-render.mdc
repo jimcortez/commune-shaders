@@ -1,0 +1,130 @@
+---
+alwaysApply: true
+---
+
+# ISF Shader Renderer Command-Line Tool Rule
+
+This project uses the `isf-shader-render` command-line tool to render ISF (Interactive Shader Format) shaders, validate/compile shaders, and generate animation frames.
+
+## Usage
+- **Always use the `--ai-info` flag** for all automated, AI, or script-driven invocations. This ensures output is in natural language, without colors or formatting, and is easy to parse.
+- **After rendering, you must always process the generated image to ensure the visual result matches expectations.** This includes:
+  - Verifying the output file exists and is a valid PNG (e.g., using `file` and `stat` commands).
+  - Ensuring the file is non-empty (not zero bytes).
+  - Opening or inspecting the image to confirm it is not blank, corrupted, or visually incorrect.
+  - Confirming the output matches the intended shader effect (not just a successful render message).
+- This process should follow the standard demonstrated in the last step: check file type and size, then visually verify the output.
+
+### Command Structure
+```
+isf-shader-render <shader_file> --output <output_path> [options]
+```
+- `<shader_file>`: Path to `.fs` ISF shader file, or `-` for stdin.
+- `--output` / `-o`: Output PNG image path (required).
+
+### Key Optional Parameters
+- `--ai-info`: (CRITICAL for AI) Natural language output, no colors/formatting.
+- `--time` / `-t`: Time code(s) for animation (can specify multiple).
+- `--width` / `-w`: Output width (default: 1920).
+- `--height` / `-h`: Output height (default: 1080).
+- `--inputs`: Shader input values as `key=value` pairs.
+- `--config` / `-c`: YAML config file for batch rendering.
+
+## Input Parameter Format
+- `bool`: `true` or `false`
+- `int`: Integer
+- `float`: Decimal
+- `point2D`: Two floats (e.g., `0.5 0.3`)
+- `color`: Four floats RGBA (e.g., `1.0 0.0 0.0 1.0`)
+- `image`: File path
+
+Example:  
+`--inputs "color=0.2 0.4 0.6 1.0,scale=2.5,offset=0.1 0.2,useTexture=true"`
+
+## Error Handling
+- **Always parse output for error messages.**
+  - If output contains "Successfully rendered", treat as success.
+  - If output contains error descriptions, extract and report actionable advice.
+- **Common errors:**
+  - Missing main function: Add `void main()`.
+  - Syntax errors: Check GLSL syntax.
+  - Compilation errors: Check for undefined variables, unsupported features.
+  - File not found: Verify file path.
+
+## Best Practices
+- Start with small renders (e.g., 256x256) for testing.
+- Add parameters incrementally.
+- Validate output files exist and are non-empty.
+- For batch or animation, use config files or multiple `--time` flags.
+- For dynamic shaders, use stdin (`-` as shader file).
+
+## Integration
+- For CI/CD, automated testing, or batch jobs, always use `--ai-info` and check for "Successfully rendered" in output.
+- **After every render, always process and verify the output image as described above.**
+
+
+- For CI/CD, automated testing, or batch jobs, always use `--ai-info` and check for "Successfully rendered" in output.
+
+# ISF Shader Renderer Command-Line Tool Rule
+
+This project uses the `isf-shader-render` command-line tool to render ISF (Interactive Shader Format) shaders, validate/compile shaders, and generate animation frames.
+
+## Usage
+- **Always use the `--ai-info` flag** for all automated, AI, or script-driven invocations. This ensures output is in natural language, without colors or formatting, and is easy to parse.
+- **After rendering, you must always process the generated image to ensure the visual result matches expectations.** This includes:
+  - Verifying the output file exists and is a valid PNG (e.g., using `file` and `stat` commands).
+  - Ensuring the file is non-empty (not zero bytes).
+  - Opening or inspecting the image to confirm it is not blank, corrupted, or visually incorrect.
+  - Confirming the output matches the intended shader effect (not just a successful render message).
+- This process should follow the standard demonstrated in the last step: check file type and size, then visually verify the output.
+
+### Command Structure
+```
+isf-shader-render <shader_file> --output <output_path> [options]
+```
+- `<shader_file>`: Path to `.fs` ISF shader file, or `-` for stdin.
+- `--output` / `-o`: Output PNG image path (required).
+
+### Key Optional Parameters
+- `--ai-info`: (CRITICAL for AI) Natural language output, no colors/formatting.
+- `--time` / `-t`: Time code(s) for animation (can specify multiple).
+- `--width` / `-w`: Output width (default: 1920).
+- `--height` / `-h`: Output height (default: 1080).
+- `--inputs`: Shader input values as `key=value` pairs.
+- `--config` / `-c`: YAML config file for batch rendering.
+
+## Input Parameter Format
+- `bool`: `true` or `false`
+- `int`: Integer
+- `float`: Decimal
+- `point2D`: Two floats (e.g., `0.5 0.3`)
+- `color`: Four floats RGBA (e.g., `1.0 0.0 0.0 1.0`)
+- `image`: File path
+
+Example:  
+`--inputs "color=0.2 0.4 0.6 1.0,scale=2.5,offset=0.1 0.2,useTexture=true"`
+
+## Error Handling
+- **Always parse output for error messages.**
+  - If output contains "Successfully rendered", treat as success.
+  - If output contains error descriptions, extract and report actionable advice.
+- **Common errors:**
+  - Missing main function: Add `void main()`.
+  - Syntax errors: Check GLSL syntax.
+  - Compilation errors: Check for undefined variables, unsupported features.
+  - File not found: Verify file path.
+
+## Best Practices
+- Start with small renders (e.g., 256x256) for testing.
+- Add parameters incrementally.
+- Validate output files exist and are non-empty.
+- For batch or animation, use config files or multiple `--time` flags.
+- For dynamic shaders, use stdin (`-` as shader file).
+
+## Integration
+- For CI/CD, automated testing, or batch jobs, always use `--ai-info` and check for "Successfully rendered" in output.
+- **After every render, always process and verify the output image as described above.**
+
+
+- For CI/CD, automated testing, or batch jobs, always use `--ai-info` and check for "Successfully rendered" in output.
+

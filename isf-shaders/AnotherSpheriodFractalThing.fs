@@ -1,5 +1,5 @@
 /*{
-    "CATEGORIES": [],
+    "CATEGORIES": ["Fractal", "3D", "Generative"],
     "CREDIT": "Jim Cortez - Commune Project (Original: mojovideotech)",
     "DESCRIPTION": "Generates complex spherical fractal patterns with intricate mathematical transformations. Creates mesmerizing 3D fractal structures that morph and evolve over time, featuring multiple rotation axes and iterative mathematical operations that produce organic, flowing geometric forms.",
     "INPUTS": [
@@ -75,6 +75,13 @@
             "MIN": 0.0,
             "NAME": "morph",
             "TYPE": "float"
+        },
+        {
+            "DEFAULT": 20.0,
+            "MAX": 100.0,
+            "MIN": 1.0,
+            "NAME": "iterations",
+            "TYPE": "float"
         }
     ],
     "ISFVSN": "2"
@@ -93,16 +100,13 @@ ORIGINAL SHADER INFORMATION:
 #define pi 3.141592653589793   // pi
 #define twpi 6.283185307179586 // two pi, 2*pi
 
+// ISF uniforms
+// (Removed explicit uniform declarations for ISF inputs)
+
 float t = TIME * rate;
 
 vec2 B(vec2 a) {
     return vec2(log(length(a)), atan(a.y, a.x) - twpi);
-}
-
-vec3 rotate(vec3 vec, vec3 axis, float ang) {
-    vec3 N = vec3(dot(vec2(cos(ang), dot(axis, vec)), vec2(sin(ang), dot(axis, vec))));
-    vec3 M = cross(axis, vec) * vec3(sin(ang), dot(axis, vec), 1.0 - cos(ang));
-    return vec * mix(N, M, morph);
 }
 
 vec3 rot(vec3 vec, vec3 axis, float ang) {
@@ -120,18 +124,22 @@ vec3 spin(vec3 v) {
     return (v.xyz);
 }
 
-vec3 F(vec2 E, float G) {
+float safe_log2(float x) {
+    return log2(max(x, 1e-6));
+}
+
+vec3 F(vec2 E, float G, float iterationsF) {
+    int iterations = int(iterationsF);
     vec2 e_ = E;
     float c = 0.;
-    const int i_max = 40;
-    
-    for (int i = 0; i < i_max; i++) {
+    for (int i = 0; i < 100; i++) {
+        if (i >= iterations) break;
         e_ = B(vec2(e_.x, abs(e_.y))) + vec2(.1 * sin(t / 3.) - .1, 5. + .1 * -cos(t / 5.));
         c += length(e_);
     }
-    
-    float d = log2(log2(c * .25)) * 9.;
-    return vec3(.5 + .75 * cos(d), .3 + .67 * cos(d - TIME * cycle), .1 + .95 * cos(G));
+    float d = safe_log2(safe_log2(c * .25)) * 9.;
+    vec3 color = clamp(vec3(.5 + .75 * cos(d), .3 + .67 * cos(d - TIME * cycle), .1 + .95 * cos(G)), 0.0, 1.0);
+    return color;
 }
 
 void main(void) {
@@ -152,5 +160,5 @@ void main(void) {
         (sax * p.y + cax * p.z) + (-say * p.x + cay * p.z)
     );
     
-    gl_FragColor = vec4(spin(range * F(H.zx, H.y)), 1.);
+    gl_FragColor = vec4(spin(range * F(H.zx, H.y, iterations)), 1.);
 } 

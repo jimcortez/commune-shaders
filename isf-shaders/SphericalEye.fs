@@ -1,5 +1,11 @@
 /*{
-	"CATEGORIES": [],
+	"CATEGORIES": [
+		"Generator",
+		"Organic",
+		"Eye",
+		"Spherical",
+		"Realistic"
+	],
 	"CREDIT": "Jim Cortez - Commune Project (Enhanced with Book of Shaders techniques)",
 	"DESCRIPTION": "Creates an advanced spherical human eyeball with realistic eye anatomy and dynamic visual effects. Features eye movement speed and range, iris color controls, pupil and iris sizing, vein intensity, reflection intensity, texture detail controls, and LFO parameters for realistic eye animations.",
 	"INPUTS": [
@@ -122,9 +128,28 @@
 			"DEFAULT": 1.0,
 			"MIN": 0.0,
 			"MAX": 10.0
+		},
+		{
+			"NAME": "enableChromaticAberration",
+			"TYPE": "bool",
+			"LABEL": "Enable Chromatic Aberration",
+			"DEFAULT": true
+		},
+		{
+			"NAME": "enableVeins",
+			"TYPE": "bool",
+			"LABEL": "Enable Veins",
+			"DEFAULT": true
+		},
+		{
+			"NAME": "enableReflections",
+			"TYPE": "bool",
+			"LABEL": "Enable Reflections",
+			"DEFAULT": true
 		}
 	],
-	"ISFVSN": "2"
+	"ISFVSN": "2",
+	"VSN": "2.0"
 }*/
 
 /*
@@ -135,10 +160,13 @@ ORIGINAL SHADER INFORMATION:
 - Description: Advanced spherical human eyeball with realistic anatomy
 - License: Custom/ISF/Book of Shaders
 - Features: Spherical human eyeball, advanced anatomy, dynamic effects, user controls
+- Updated: Following ISF 2.0 best practices and documentation guidelines
 */
 
+// ISF Standard Constants
 #define PI 3.14159265359
 #define TWO_PI 6.28318530718
+#define HALF_PI 1.57079632679
 
 // Advanced noise functions from Book of Shaders
 float hash(float n) {
@@ -260,7 +288,7 @@ vec2 getEyeMovement(float time, float speed, float range) {
 }
 
 void main() {
-    // Get the base UV coordinates
+    // Get the base UV coordinates using ISF standard
     vec2 uv = isf_FragNormCoord;
     
     // Convert to 3D sphere coordinates
@@ -324,9 +352,11 @@ void main() {
     pupilColor += pupilDepth * 0.1;
     col = mix(col, pupilColor, pupilMask);
     
-    // Enhanced reflections that move with the eye
-    f = 1.0 - smoothstep(0.0, 0.6, length2(mat2(0.6, 0.8, -0.8, 0.6) * (p - vec2(0.3, 0.5)) * vec2(1.0, 2.0)));
-    col += vec3(1.0, 0.9, 0.9) * f * 0.985 * reflectionIntensity;
+    // Enhanced reflections that move with the eye (conditional)
+    if (enableReflections) {
+        f = 1.0 - smoothstep(0.0, 0.6, length2(mat2(0.6, 0.8, -0.8, 0.6) * (p - vec2(0.3, 0.5)) * vec2(1.0, 2.0)));
+        col += vec3(1.0, 0.9, 0.9) * f * 0.985 * reflectionIntensity;
+    }
     
     // Add color variation based on position
     col *= vec3(0.8 + 0.2 * cos(r * a));
@@ -340,18 +370,22 @@ void main() {
     // Enhanced vignette effect
     col *= 0.5 + 0.5 * pow(16.0 * eyeUV.x * eyeUV.y * (1.0 - eyeUV.x) * (1.0 - eyeUV.y), 0.1);
     
-    // Add realistic veins to sclera
-    float veins = fbm(eyeUV * 8.0 + TIME * 0.1) * veinIntensity;
-    veins *= smoothstep2(0.0, 0.4, dist) * smoothstep2(0.5, 0.4, dist);
-    veins *= smoothstep2(0.0, 0.1, veins);
-    col += veins * vec3(0.8, 0.2, 0.2) * 0.15;
+    // Add realistic veins to sclera (conditional)
+    if (enableVeins) {
+        float veins = fbm(eyeUV * 8.0 + TIME * 0.1) * veinIntensity;
+        veins *= smoothstep2(0.0, 0.4, dist) * smoothstep2(0.5, 0.4, dist);
+        veins *= smoothstep2(0.0, 0.1, veins);
+        col += veins * vec3(0.8, 0.2, 0.2) * 0.15;
+    }
     
-    // Add subtle chromatic aberration for realism
-    float chromaOffset = 0.002;
-    vec2 chromaUV = eyeUV + vec2(chromaOffset, 0.0);
-    float chromaDist = length(chromaUV - center);
-    float chromaMask = smoothstep2(irisSize, irisSize - 0.05, chromaDist);
-    col.r += chromaMask * 0.1;
+    // Add subtle chromatic aberration for realism (conditional)
+    if (enableChromaticAberration) {
+        float chromaOffset = 0.002;
+        vec2 chromaUV = eyeUV + vec2(chromaOffset, 0.0);
+        float chromaDist = length(chromaUV - center);
+        float chromaMask = smoothstep2(irisSize, irisSize - 0.05, chromaDist);
+        col.r += chromaMask * 0.1;
+    }
     
     // Add subtle ambient occlusion around the eye
     float ao = smoothstep2(0.0, 0.2, dist) * 0.4;
@@ -362,5 +396,6 @@ void main() {
     vec3 scleraColor = vec3(scleraBrightness) + vec3(0.02, 0.01, 0.01);
     col = mix(col, scleraColor, scleraMask * 0.3);
     
+    // Ensure proper alpha channel handling as per ISF documentation
     gl_FragColor = vec4(col, 1.0);
 } 

@@ -63,8 +63,32 @@
             "DEFAULT": 1.0,
             "LABEL": "Intensity: ",
             "MAX": 4.0,
-            "MIN": 0,
+            "MIN": 0.0,
             "NAME": "uIntensity",
+            "TYPE": "float"
+        },
+        {
+            "DEFAULT": 18.0,
+            "LABEL": "Iterations: ",
+            "MAX": 32.0,
+            "MIN": 8.0,
+            "NAME": "uIterations",
+            "TYPE": "float"
+        },
+        {
+            "DEFAULT": 0.3,
+            "LABEL": "Animation Speed: ",
+            "MAX": 2.0,
+            "MIN": 0.0,
+            "NAME": "uAnimSpeed",
+            "TYPE": "float"
+        },
+        {
+            "DEFAULT": 0.99,
+            "LABEL": "Scale Factor: ",
+            "MAX": 1.0,
+            "MIN": 0.8,
+            "NAME": "uScaleFactor",
             "TYPE": "float"
         }
     ],
@@ -89,29 +113,46 @@ void main()
     vec2 uv = gl_FragCoord.xy/RENDERSIZE - 0.5; // normalize coordinates
     uv.x *= RENDERSIZE.x/RENDERSIZE.y;          // correct aspect ratio
     uv = (uv-uOffset) * 3.0/uZoom;              // offset and zoom functions
-    uv = uContRot ? uv*rotate2D(TIME*uRotate/36.0) : uv*rotate2D(uRotate*PI/180.0); // rotation
+    
+    // Fixed rotation calculation - now consistent between continuous and static modes
+    float rotationAngle = uRotate * PI / 180.0;
+    if (uContRot) {
+        rotationAngle += TIME * uAnimSpeed;
+    }
+    uv = uv * rotate2D(rotationAngle);
 
     vec2 p = uv;
-    float d = 2.*length(p);
-    vec3 col = vec3(0); 
-    for (int i = 0; i < 18; i++)
+    float d = 2.0 * length(p);
+    vec3 col = vec3(0.0); 
+    
+    // Use configurable iterations with proper casting
+    int iterations = int(clamp(uIterations, 8.0, 32.0));
+    
+    for (int i = 0; i < 32; i++) // Fixed upper bound for GLSL compatibility
     {
-        float dist = abs(p.y + sin(float(i)+TIME*0.3+3.0*p.x)) - 0.2;
-        if (dist < 1.0) { col += (1.0-pow(abs(dist), 0.28))*vec3(0.8+0.2*sin(TIME),0.9+0.1*sin(TIME*1.1),1.2); }
-        p *= 0.99/d; 
-        p *= rotate2D(PI/60.0);  // was: p = rotz(p, 30.0) 
+        if (i >= iterations) break; // Early exit for configurable iterations
+        
+        float dist = abs(p.y + sin(float(i) + TIME * uAnimSpeed + 3.0 * p.x)) - 0.2;
+        if (dist < 1.0) { 
+            col += (1.0 - pow(abs(dist), 0.28)) * vec3(0.8 + 0.2 * sin(TIME), 0.9 + 0.1 * sin(TIME * 1.1), 1.2); 
+        }
+        
+        // Improved precision with clamp to prevent division by very small numbers
+        float scaleDivisor = max(d, 0.001);
+        p *= uScaleFactor / scaleDivisor; 
+        p *= rotate2D(PI / 60.0);
     }
-    col *= 0.49 ; 
+    col *= 0.49; 
 
-    vec4 cShad = vec4( col-d-0.4, 1.0);  
+    vec4 cShad = vec4(col - d - 0.4, 1.0);  
     vec3 cOut = cShad.rgb;
-    if (uColMode == 1)
-    {
-        cOut = uC1.rgb * cShad.r;
-        cOut += uC2.rgb * cShad.g;
-        cOut += uC3.rgb * cShad.b;
+    
+    // Optimized color mode switching
+    if (uColMode == 1) {
+        cOut = uC1.rgb * cShad.r + uC2.rgb * cShad.g + uC3.rgb * cShad.b;
     }
+    
     cOut = cOut * uIntensity;
     cOut = clamp(cOut, vec3(0.0), vec3(1.0));
-    gl_FragColor = vec4(cOut.rgb,cShad.a);
+    gl_FragColor = vec4(cOut.rgb, cShad.a);
 }

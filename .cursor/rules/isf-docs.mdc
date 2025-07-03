@@ -1,0 +1,11 @@
+---
+alwaysApply: false
+---
+
+# ISF Shader Documentation Rule
+
+When dealing with ISF shaders, always include and reference:
+- @ISF Documentation and Spec
+- @ISF Spec
+
+This ensures that all ISF shader-related tasks follow the official documentation and specification for compatibility and correctness.

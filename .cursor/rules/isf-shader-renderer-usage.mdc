@@ -1,0 +1,98 @@
+---
+alwaysApply: true
+---
+
+# ISF Shader Renderer Usage
+
+## Command Structure
+```bash
+isf-shader-render <shader_file> --output <output_path> [options]
+```
+
+## Required Flags for AI/Automation
+- **Always use `--ai-info` flag** for automated, AI, or script-driven invocations
+- This ensures output is in natural language, without colors or formatting, and is easy to parse
+
+## Essential Parameters
+- `--output` / `-o`: Output PNG image path (required)
+- `--width` / `-w`: Output width (default: 1920)
+- `--height` / `-h`: Output height (default: 1080)
+- `--inputs`: Shader input values as `key=value` pairs
+
+## Input Parameter Format
+- `bool`: `true` or `false`
+- `int`: Integer
+- `float`: Decimal
+- `point2D`: Two floats (e.g., `0.5 0.3`)
+- `color`: Four floats RGBA (e.g., `1.0 0.0 0.0 1.0`)
+- `image`: File path
+
+## Example Commands
+```bash
+# Basic render with AI info
+isf-shader-render shader.fs --output test.png --ai-info
+
+# Small test render
+isf-shader-render shader.fs --output test.png --width 256 --height 256 --ai-info
+
+# With custom inputs
+isf-shader-render shader.fs --output test.png --ai-info --inputs "iterations=20.0,range=0.5"
+```
+
+## Post-Render Verification
+After every render, **always verify the output**:
+1. Check file exists and is valid PNG: `file output.png`
+2. Ensure file is non-empty: `stat -f%z output.png`
+3. Confirm output matches intended shader effect (not just successful render message)
+
+## Error Handling
+- Parse output for "Successfully rendered" to confirm success
+- Look for error descriptions in output for debugging
+- Common errors: missing main function, syntax errors, compilation failures
+# ISF Shader Renderer Usage
+
+## Command Structure
+```bash
+isf-shader-render <shader_file> --output <output_path> [options]
+```
+
+## Required Flags for AI/Automation
+- **Always use `--ai-info` flag** for automated, AI, or script-driven invocations
+- This ensures output is in natural language, without colors or formatting, and is easy to parse
+
+## Essential Parameters
+- `--output` / `-o`: Output PNG image path (required)
+- `--width` / `-w`: Output width (default: 1920)
+- `--height` / `-h`: Output height (default: 1080)
+- `--inputs`: Shader input values as `key=value` pairs
+
+## Input Parameter Format
+- `bool`: `true` or `false`
+- `int`: Integer
+- `float`: Decimal
+- `point2D`: Two floats (e.g., `0.5 0.3`)
+- `color`: Four floats RGBA (e.g., `1.0 0.0 0.0 1.0`)
+- `image`: File path
+
+## Example Commands
+```bash
+# Basic render with AI info
+isf-shader-render shader.fs --output test.png --ai-info
+
+# Small test render
+isf-shader-render shader.fs --output test.png --width 256 --height 256 --ai-info
+
+# With custom inputs
+isf-shader-render shader.fs --output test.png --ai-info --inputs "iterations=20.0,range=0.5"
+```
+
+## Post-Render Verification
+After every render, **always verify the output**:
+1. Check file exists and is valid PNG: `file output.png`
+2. Ensure file is non-empty: `stat -f%z output.png`
+3. Confirm output matches intended shader effect (not just successful render message)
+
+## Error Handling
+- Parse output for "Successfully rendered" to confirm success
+- Look for error descriptions in output for debugging
+- Common errors: missing main function, syntax errors, compilation failures
