@@ -5,11 +5,7 @@
 	"INPUTS": [
 		{"NAME": "speed", "TYPE": "float", "DEFAULT": 1.0, "MIN": 0.0, "MAX": 2.0}
 	],
-	"ISFVSN": "2",
-	"PASSES": [
-		{"TARGET": "bufferVariableNameA", "WIDTH": "$WIDTH/16.0", "HEIGHT": "$HEIGHT/16.0"},
-		{"DESCRIPTION": "this empty pass is rendered at the same rez as whatever you are running the ISF filter at- the previous step rendered an image at one-sixteenth the res, so this step ensures that the output is full-size"}
-	]
+	"ISFVSN": "2"
 }*/
 
 /*

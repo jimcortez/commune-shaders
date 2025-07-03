@@ -3,18 +3,12 @@
 	"CREDIT": "Jim Cortez - Commune Project (Original: Unknown, inspired by IQ palettes)",
 	"DESCRIPTION": "Creates a Kishimisu hexagram tutorial effect with palette coloring. Features hexagram SDF, IQ palette system, speed, twist, bloom, and point controls for educational spiral animations.",
 	"INPUTS": [
-		{"NAME": "colorInput", "TYPE": "color", "DEFAULT": [0.0, 0.0, 1.0, 1.0]},
-		{"NAME": "flashInput", "TYPE": "event"},
 		{"NAME": "speed", "TYPE": "float", "DEFAULT": 0.1, "MIN": -1.0, "MAX": 1.0},
 		{"NAME": "twist", "TYPE": "float", "DEFAULT": 0.1, "MIN": -1.0, "MAX": 1.0},
 		{"NAME": "bloom", "TYPE": "float", "DEFAULT": 0.9, "MIN": 0.25, "MAX": 2.0},
 		{"NAME": "pointInput", "TYPE": "point2D", "DEFAULT": [0, 0]}
 	],
-	"ISFVSN": "2",
-	"PASSES": [
-		{"TARGET": "bufferVariableNameA", "WIDTH": "$WIDTH/16.0", "HEIGHT": "$HEIGHT/16.0"},
-		{"DESCRIPTION": "this empty pass is rendered at the same rez as whatever you are running the ISF filter at- the previous step rendered an image at one-sixteenth the res, so this step ensures that the output is full-size"}
-	]
+	"ISFVSN": "2"
 }*/
 
 /*
