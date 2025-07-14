@@ -1,5 +1,5 @@
 /*{
-    "CATEGORIES": [],
+    "CATEGORIES": ["Nature", "Aurora", "Organic", "Flow"],
     "CREDIT": "Jim Cortez - Commune Project (Original: ISF Import by Old Salt)",
     "DESCRIPTION": "Creates a mesmerizing aurora borealis effect with flowing, ethereal light patterns that dance across the screen. Features multiple layers of sinuous light bands that move and morph organically, simulating the natural phenomenon of the northern lights with customizable colors and movement controls.",
     "INPUTS": [
@@ -125,20 +125,24 @@ void main()
     float d = 2.0 * length(p);
     vec3 col = vec3(0.0); 
     
-    // Use configurable iterations with proper casting
+    // Use configurable iterations with proper casting and GLSL-compatible loop
     int iterations = int(clamp(uIterations, 8.0, 32.0));
     
-    for (int i = 0; i < 32; i++) // Fixed upper bound for GLSL compatibility
+    // GLSL-compatible loop with fixed bounds and blend factor for fractional iterations
+    for (int i = 0; i < 32; i++)
     {
-        if (i >= iterations) break; // Early exit for configurable iterations
+        float blendFactor = 1.0;
+        if (float(i) >= float(iterations)) {
+            blendFactor = 0.0;
+        }
         
         float dist = abs(p.y + sin(float(i) + TIME * uAnimSpeed + 3.0 * p.x)) - 0.2;
         if (dist < 1.0) { 
-            col += (1.0 - pow(abs(dist), 0.28)) * vec3(0.8 + 0.2 * sin(TIME), 0.9 + 0.1 * sin(TIME * 1.1), 1.2); 
+            col += blendFactor * (1.0 - pow(abs(dist), 0.28)) * vec3(0.8 + 0.2 * sin(TIME), 0.9 + 0.1 * sin(TIME * 1.1), 1.2); 
         }
         
-        // Improved precision with clamp to prevent division by very small numbers
-        float scaleDivisor = max(d, 0.001);
+        // Improved precision with safer division
+        float scaleDivisor = max(d, 1e-6);
         p *= uScaleFactor / scaleDivisor; 
         p *= rotate2D(PI / 60.0);
     }

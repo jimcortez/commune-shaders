@@ -50,6 +50,14 @@
 			"MAX": 1.0
 		},
 		{
+			"NAME": "scleraSize",
+			"TYPE": "float",
+			"LABEL": "Sclera Size",
+			"DEFAULT": 0.8,
+			"MIN": 0.0,
+			"MAX": 1.0
+		},
+		{
 			"NAME": "scleraBrightness",
 			"TYPE": "float",
 			"LABEL": "Sclera Brightness",
@@ -146,6 +154,14 @@
 			"TYPE": "bool",
 			"LABEL": "Enable Reflections",
 			"DEFAULT": true
+		},
+		{
+			"NAME": "zoom",
+			"TYPE": "float",
+			"LABEL": "Zoom",
+			"DEFAULT": 1.0,
+			"MIN": 0.5,
+			"MAX": 3.0
 		}
 	],
 	"ISFVSN": "2",
@@ -266,136 +282,127 @@ vec2 sphereToUV(vec3 sphere) {
     return vec2(u, v);
 }
 
-// Realistic eye movement patterns using multiple sine waves
+// Realistic eye movement patterns with smooth saccades and natural sweeps
 vec2 getEyeMovement(float time, float speed, float range) {
-    // Primary movement (saccades)
-    float primaryX = sin(time * speed) * sin(time * speed * 0.3);
-    float primaryY = cos(time * speed * 0.7) * sin(time * speed * 0.2);
+    // Slower, more natural base movement patterns
+    float baseX = sin(time * speed * 0.3) * 0.6;
+    float baseY = cos(time * speed * 0.4) * 0.5;
     
-    // Micro-movements (tremor)
-    float tremorX = sin(time * speed * 8.0) * 0.1;
-    float tremorY = cos(time * speed * 6.0) * 0.1;
+    // Smooth horizontal sweeps (left to right)
+    float sweepX = sin(time * speed * 0.15) * 0.8;
     
-    // Drift movement
-    float driftX = sin(time * speed * 0.1) * 0.3;
-    float driftY = cos(time * speed * 0.15) * 0.3;
+    // Vertical gaze changes (up and down)
+    float gazeY = sin(time * speed * 0.25) * 0.4;
     
-    // Combine movements
-    vec2 movement = vec2(primaryX + tremorX + driftX, primaryY + tremorY + driftY);
+    // Subtle micro-movements (natural tremor)
+    float tremorX = sin(time * speed * 12.0) * 0.05;
+    float tremorY = cos(time * speed * 10.0) * 0.05;
     
-    // Convert to radians and apply range
-    return movement * range * PI / 180.0;
+    // Occasional larger movements (saccades)
+    float saccadeX = sin(time * speed * 0.08) * smoothstep(0.0, 0.5, sin(time * speed * 0.02)) * 0.3;
+    float saccadeY = cos(time * speed * 0.12) * smoothstep(0.0, 0.5, cos(time * speed * 0.03)) * 0.2;
+    
+    // Combine movements with weighted blending
+    vec2 movement = vec2(
+        baseX * 0.3 + sweepX * 0.4 + saccadeX * 0.2 + tremorX * 0.1,
+        baseY * 0.3 + gazeY * 0.4 + saccadeY * 0.2 + tremorY * 0.1
+    );
+    
+    // Apply smoothstep for more natural motion curves
+    movement = smoothstep(-1.0, 1.0, movement * 0.5 + 0.5) * 2.0 - 1.0;
+    
+    // Return movement as UV offset (not radians)
+    return movement * range * 0.1; // Scale down for UV space
 }
 
 void main() {
     // Get the base UV coordinates using ISF standard
     vec2 uv = isf_FragNormCoord;
     
-    // Convert to 3D sphere coordinates
-    vec3 spherePos = uvToSphere(uv);
-    
-    // Calculate realistic eye movement
-    vec2 eyeMovement = getEyeMovement(TIME, eyeMovementSpeed, eyeMovementRange);
-    
-    // Apply rotations to the sphere
-    mat3 rotationMatrix = rotateY(eyeMovement.x) * rotateX(eyeMovement.y);
-    vec3 rotatedSphere = rotationMatrix * spherePos;
-    
-    // Convert back to 2D UV coordinates
-    vec2 eyeUV = sphereToUV(rotatedSphere);
-    
-    // Handle wrapping for seamless projection
-    eyeUV = fract(eyeUV);
-    
-    // Calculate distance from center for eye features
-    vec2 center = vec2(0.5, 0.5);
-    float dist = length(eyeUV - center);
-    
-    // Enhanced coordinate system for better texture mapping
-    vec2 p = -1.0 + 2.0 * eyeUV;
-    p.x *= RENDERSIZE.x / RENDERSIZE.y;
-    float r = length(p);
-    float a = atan(p.y, p.x);
-    
-    // Dynamic distortion based on LFO
-    float dd = 0.2 * sin(lfoRate * TIME) * lfoRateAmp;
-    float ss = 1.0 + clamp(1.0 - r, 0.0, 1.0) * dd;
-    r *= ss;
-    
-    // Create the eye structure with enhanced realism
-    vec3 col = vec3(0.0, 0.3, 0.4); // Base sclera color
-    
-    // Enhanced sclera texture
-    float f = fbm(5.0 * p);
-    col = mix(col, vec3(0.2, 0.5, 0.4), f);
-    col = mix(col, vec3(0.9, 0.6, 0.2), 1.0 - smoothstep(0.2, 0.6, r));
-    
-    // Add iris texture and detail
-    a += textureDetail3 * fbm(20.0 * p);
-    f = smoothstep(0.3, 1.0, fbm(vec2(20.0 * a, 6.0 * r)));
-    col = mix(col, vec3(1.0, 1.0, 1.0), f);
-    
-    // Add iris color using HSB
-    vec3 irisColor = hsb2rgb(vec3(irisHue, irisSaturation, irisBrightness));
-    float irisMask = smoothstep2(irisSize, irisSize - 0.05, dist);
-    col = mix(col, irisColor, irisMask * 0.8);
-    
-    // Enhanced iris detail
-    f = smoothstep(0.4, 0.9, fbm(vec2(15.0 * a, 10.0 * r)));
-    col *= 1.0 - 0.5 * f;
-    col *= 1.0 - 0.25 * smoothstep(0.6, 0.8, r);
-    
-    // Pupil with realistic depth
-    float pupilMask = smoothstep2(pupilSize, pupilSize - 0.02, dist);
-    vec3 pupilColor = vec3(0.0, 0.0, 0.0);
-    float pupilDepth = smoothstep2(0.0, pupilSize * 0.5, dist);
-    pupilColor += pupilDepth * 0.1;
-    col = mix(col, pupilColor, pupilMask);
-    
-    // Enhanced reflections that move with the eye (conditional)
-    if (enableReflections) {
-        f = 1.0 - smoothstep(0.0, 0.6, length2(mat2(0.6, 0.8, -0.8, 0.6) * (p - vec2(0.3, 0.5)) * vec2(1.0, 2.0)));
-        col += vec3(1.0, 0.9, 0.9) * f * 0.985 * reflectionIntensity;
+    float aspect = RENDERSIZE.x / RENDERSIZE.y;
+    vec2 centered = uv - 0.5;
+    if (aspect > 1.0) {
+        centered.x *= aspect;
     }
-    
-    // Add color variation based on position
-    col *= vec3(0.8 + 0.2 * cos(r * a));
-    
-    // Eye outline
-    f = 1.0 - smoothstep(0.2, 0.25, r);
-    col = mix(col, vec3(0.0), f);
-    f = smoothstep(0.79, 0.82, r);
-    col = mix(col, vec3(1.0), f);
-    
-    // Enhanced vignette effect
-    col *= 0.5 + 0.5 * pow(16.0 * eyeUV.x * eyeUV.y * (1.0 - eyeUV.x) * (1.0 - eyeUV.y), 0.1);
-    
-    // Add realistic veins to sclera (conditional)
-    if (enableVeins) {
-        float veins = fbm(eyeUV * 8.0 + TIME * 0.1) * veinIntensity;
-        veins *= smoothstep2(0.0, 0.4, dist) * smoothstep2(0.5, 0.4, dist);
-        veins *= smoothstep2(0.0, 0.1, veins);
-        col += veins * vec3(0.8, 0.2, 0.2) * 0.15;
+    centered /= zoom;
+    centered += getEyeMovement(TIME, eyeMovementSpeed, eyeMovementRange);
+    float dist = length(centered);
+    float eyeMask = step(dist, 0.5);
+    // Set background color
+    vec3 bgColor = vec3(0.92, 0.93, 0.95); // light gray
+    vec3 col = bgColor;
+    // Debug: add a red outline at the mask edge
+    float outline = smoothstep(0.495, 0.5, dist) - smoothstep(0.5, 0.505, dist);
+    if (eyeMask > 0.0) {
+        // Eye color logic (iris, pupil, sclera, etc.)
+        vec2 p = centered; // for mapping
+        float r = length(p);
+        float a = atan(p.y, p.x);
+        // Dynamic distortion based on LFO
+        float dd = 0.2 * sin(lfoRate * TIME) * lfoRateAmp;
+        float ss = 1.0 + clamp(1.0 - r, 0.0, 1.0) * dd;
+        r *= ss;
+        // Create the eye structure with enhanced realism
+        col = vec3(0.0, 0.3, 0.4); // Base sclera color
+        // Enhanced sclera texture
+        float f = fbm(5.0 * p);
+        col = mix(col, vec3(0.2, 0.5, 0.4), f);
+        col = mix(col, vec3(0.9, 0.6, 0.2), 1.0 - smoothstep(0.2, 0.6, r));
+        // Add iris texture and detail
+        a += textureDetail3 * fbm(20.0 * p);
+        f = smoothstep(0.3, 1.0, fbm(vec2(20.0 * a, 6.0 * r)));
+        col = mix(col, vec3(1.0, 1.0, 1.0), f);
+        // Add iris color using HSB
+        vec3 irisColor = hsb2rgb(vec3(irisHue, irisSaturation, irisBrightness));
+        float irisMask = smoothstep2(irisSize, irisSize - 0.05, r);
+        col = mix(col, irisColor, irisMask * 0.8);
+        // Enhanced iris detail
+        f = smoothstep(0.4, 0.9, fbm(vec2(15.0 * a, 10.0 * r)));
+        col *= 1.0 - 0.5 * f;
+        col *= 1.0 - 0.25 * smoothstep(0.6, 0.8, r);
+        // Pupil with realistic depth
+        float pupilMask = smoothstep2(pupilSize, pupilSize - 0.02, r);
+        vec3 pupilColor = vec3(0.0, 0.0, 0.0);
+        float pupilDepth = smoothstep2(0.0, pupilSize * 0.5, r);
+        pupilColor += pupilDepth * 0.1;
+        col = mix(col, pupilColor, pupilMask);
+        // Enhanced reflections that move with the eye (conditional)
+        if (enableReflections) {
+            f = 1.0 - smoothstep(0.0, 0.6, length2(mat2(0.6, 0.8, -0.8, 0.6) * (p - vec2(0.3, 0.5)) * vec2(1.0, 2.0)));
+            col += vec3(1.0, 0.9, 0.9) * f * 0.985 * reflectionIntensity;
+        }
+        // Add color variation based on position
+        col *= vec3(0.8 + 0.2 * cos(r * a));
+        // Eye outline
+        f = 1.0 - smoothstep(0.2, 0.25, r);
+        col = mix(col, vec3(0.0), f);
+        f = smoothstep(scleraSize - 0.03, scleraSize, r);
+        col = mix(col, vec3(1.0), f);
+        // Add realistic veins to sclera (conditional)
+        if (enableVeins) {
+            float veins = fbm(uv * 8.0 + TIME * 0.1) * veinIntensity;
+            veins *= smoothstep2(0.0, scleraSize * 0.5, r) * smoothstep2(scleraSize * 0.6, scleraSize * 0.5, r);
+            veins *= smoothstep2(0.0, 0.1, veins);
+            col += veins * vec3(0.8, 0.2, 0.2) * 0.15;
+        }
+        // Add subtle chromatic aberration for realism (conditional)
+        if (enableChromaticAberration) {
+            float chromaOffset = 0.002;
+            vec2 chromaUV = p + vec2(chromaOffset, 0.0);
+            float chromaDist = length(chromaUV);
+            float chromaMask = smoothstep2(irisSize, irisSize - 0.05, chromaDist);
+            col.r += chromaMask * 0.1;
+        }
+        // Add subtle ambient occlusion around the eye
+        float ao = smoothstep2(0.0, 0.2, r) * 0.4;
+        col *= 1.0 - ao;
+        // Final color adjustment for sclera brightness
+        float scleraMask = smoothstep2(scleraSize * 0.6, scleraSize * 0.65, r);
+        vec3 scleraColor = vec3(scleraBrightness) + vec3(0.02, 0.01, 0.01);
+        col = mix(col, scleraColor, scleraMask * 0.3);
     }
-    
-    // Add subtle chromatic aberration for realism (conditional)
-    if (enableChromaticAberration) {
-        float chromaOffset = 0.002;
-        vec2 chromaUV = eyeUV + vec2(chromaOffset, 0.0);
-        float chromaDist = length(chromaUV - center);
-        float chromaMask = smoothstep2(irisSize, irisSize - 0.05, chromaDist);
-        col.r += chromaMask * 0.1;
-    }
-    
-    // Add subtle ambient occlusion around the eye
-    float ao = smoothstep2(0.0, 0.2, dist) * 0.4;
-    col *= 1.0 - ao;
-    
-    // Final color adjustment for sclera brightness
-    float scleraMask = smoothstep2(0.45, 0.5, dist);
-    vec3 scleraColor = vec3(scleraBrightness) + vec3(0.02, 0.01, 0.01);
-    col = mix(col, scleraColor, scleraMask * 0.3);
-    
+    // Add debug outline
+    col = mix(col, vec3(1.0, 0.0, 0.0), outline);
     // Ensure proper alpha channel handling as per ISF documentation
     gl_FragColor = vec4(col, 1.0);
 } 

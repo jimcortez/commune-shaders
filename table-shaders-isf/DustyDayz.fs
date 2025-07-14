@@ -1,5 +1,6 @@
 /*{
     "CATEGORIES": [],
+    "INPUTS": [],
     "CREDIT": "Jim Cortez - Commune Project (Original: Roman Bobniev (FatumR))",
     "DESCRIPTION": "Creates a dusty atmospheric effect with complex fractal noise patterns and color mixing. Features multi-layered fractal Brownian motion that generates organic, dusty textures with smooth color transitions between atmospheric tones, simulating hazy environmental conditions.",
     "ISFVSN": "2"
