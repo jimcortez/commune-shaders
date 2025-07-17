@@ -15,17 +15,6 @@ alwaysApply: true
 - **Use fixed iteration counts** for loops and blend results for fractional control
 - **Clamp color outputs** to [0,1] range to avoid artifacts: `clamp(color, 0.0, 1.0)`
 
-## ISF Shader Structure
-- **JSON metadata must be at the top** of the file in `/*{ ... }*/` format
-- **Use descriptive LABEL fields** for rotation inputs: `"LABEL": "X rotate"`
-- **Set appropriate MIN/MAX values** for all numeric inputs
-
-## Testing and Validation
-- **Always use `isf-shader-render` with `--ai-info` flag** for automated testing
-- **Test with small output sizes first** (e.g., 256x256) for quick validation
-- **Verify output files exist and are non-empty** after rendering
-- **Check file type and size** to ensure valid PNG output
-
 ## Common Fixes
 - Remove unused functions (like duplicate rotation functions)
 - Use `safe_log2(float x) { return log2(max(x, 1e-6)); }` helper
