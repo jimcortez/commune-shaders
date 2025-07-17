@@ -71,6 +71,14 @@
             "MIN": -1.0,
             "MAX": 1.0,
             "LABEL": "Center Y Offset"
+        },
+        {
+            "NAME": "mat_zoom",
+            "TYPE": "float",
+            "DEFAULT": 1.0,
+            "MIN": 0.25,
+            "MAX": 4.0,
+            "LABEL": "Zoom"
         }
     ],
     "GENERATORS": [
@@ -130,8 +138,8 @@ vec3 hsl2rgb(vec3 hsl) {
 }
 
 vec4 materialColorForPixel(vec2 texCoord) {
-    // Transform coordinate space
-    vec2 uv = (texCoord * 2.0 - 1.0) * 0.5;
+    // Transform coordinate space with zoom
+    vec2 uv = (texCoord * 2.0 - 1.0) * 0.5 / mat_zoom;
     uv += vec2(mat_pointInputX, mat_pointInputY);
 
     // Calculate polar coordinates for rotation
@@ -169,6 +177,6 @@ vec4 materialColorForPixel(vec2 texCoord) {
         
         finalColor += iterationColor * intensity;
     }
-    
+    finalColor = clamp(finalColor, 0.0, 1.0);
     return vec4(finalColor, 1.0);
 }
